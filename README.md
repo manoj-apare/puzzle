@@ -1,0 +1,4 @@
+puzzle
+======
+
+Simple jQuery puzzle
