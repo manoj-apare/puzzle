@@ -1,0 +1,331 @@
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Puzzle</title>
+        <link rel="stylesheet" href="./resources/css/jquery-ui.css" />
+        <script src="./resources/js/jquery-1.9.1.min.js"></script>
+        <script src="./resources/js/jquery-ui.min.js"></script>
+        <style>
+            html{
+                background: url('resources/images/background.jpg');
+            }
+            body{
+                -moz-user-select: none; 
+                -webkit-user-select: none; 
+                -ms-user-select:none; 
+                user-select:none;
+            }
+            #sortable { 
+                list-style-type: none; 
+                padding: 0; 
+                margin: 30px auto;
+            }
+            #sortable li {  
+                float: left; 
+                text-align: center;  
+                cursor: pointer;
+                border: 1px solid rgba(0,0,0,0.5);
+                border-radius: 10px 10px;
+                background: rgba(0,0,0,0.1);
+                box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
+                -o-box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
+                -webkit-box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
+                -moz-box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
+                color: rgb(0, 0, 0) !important;
+            }
+            #blank{
+                visibility: hidden;
+            }
+            #movesDiv, #timeDiv{
+                margin: 20px;
+                font-size: 20px;
+                font-family: courier;
+                color: rgb(0, 0, 0);
+            }
+
+            #hrs, #min, #sec, #moves{
+                padding: 3px;
+                width:1em;
+                background-color:#444;
+                border-radius:0.2em;
+                text-align:center;
+                 background: rgba(0,0,0,0);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 5px rgba(255,255,255,0.2), inset 0 5px 10px rgba(255,255,255,0.25), inset 0 -8px 15px rgba(0,0,0,0.3);
+                -o-box-shadow: 0 1px 3px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 5px rgba(255,255,255,0.2), inset 0 5px 10px rgba(255,255,255,0.25), inset 0 -8px 15px rgba(0,0,0,0.3);
+                -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 5px rgba(255,255,255,0.2), inset 0 5px 10px rgba(255,255,255,0.25), inset 0 -8px 15px rgba(0,0,0,0.3);
+                -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 5px rgba(255,255,255,0.2), inset 0 5px 10px rgba(255,255,255,0.25), inset 0 -8px 15px rgba(0,0,0,0.3);
+                color: rgb(0, 0, 0) !important;
+            }   
+
+            @media all and (min-width: 481px){
+                #sortable {  
+                    width: 450px; 
+                }
+                #sortable li {   
+                    width: 100px; 
+                    height: 90px; 
+                    font-size: 5em; 
+                }
+            }
+
+            @media all and (min-width: 350px) and (max-width: 480px){
+                #sortable {  
+                    width: 338px; 
+                }
+                #sortable li {   
+                    width: 75px; 
+                    height: 68px; 
+                    font-size: 3em; 
+                }
+                .ui-dialog{
+                    width: 75% !important;
+                }
+            }
+
+            @media all and (max-width: 349px){
+                #sortable {  
+                    width: 254px; 
+                }
+                #sortable li {   
+                    width: 56px; 
+                    height: 51px; 
+                    font-size: 2em; 
+                }
+                #movesDiv, #timeDiv{
+                    margin: 20px 0;
+                    font-size: 20px;
+                    font-family: courier;
+                }
+                .ui-dialog{
+                    width: 75% !important;
+                }
+            }
+
+        </style>
+        <script>
+            totalSeconds = 0;
+            seconds = 0;
+            minutes = 0;
+            hours = 0;
+
+            function setTime(){
+                ++totalSeconds;
+                seconds = pad( totalSeconds % 60 );
+                minutes = pad( Math.floor( totalSeconds / 60 ) % 60 );
+                hours = pad( Math.floor( totalSeconds / 3600 ) );
+                $('#sec').html(seconds);
+                $('#min').html(minutes);
+                $('#hrs').html(hours);
+            }
+
+            function pad(val){
+                var valString = val + "";
+                if(valString.length < 2){
+                    return "0" + valString;
+                }
+                else{
+                    return valString;
+                }
+            }
+
+            function getRow(a){
+                if( 1 <= a && a <= 4) return 1;
+                else if( 5 <= a && a <= 8) return 2;
+                else if( 9 <= a && a <= 12) return 3;
+                else if( 13 <= a && a <= 16) return 4;
+            }
+
+            function getCol(a){
+                switch(a%4){
+                    case 0:
+                        return 4;
+                        break;
+                    default:
+                        return a%4;
+                        break;
+                }
+            }
+
+            function isSameRow(b,c){
+                var bRow, cRow;
+
+                bRow = getRow(b);
+                cRow = getRow(c);
+
+                return (bRow == cRow);
+            }
+
+            function isSameColumn(b,c){
+                var bCol, cCol;
+
+                bCol = getCol(b);
+                cCol = getCol(c);
+
+                return (bCol == cCol);
+            }
+
+            function checkBlocks(){
+                var blockArrangedCorrectly = true;
+                $('ul li').each(function(i){
+                    $(this).attr('block', i+1);
+                    if($(this).html() != $(this).attr('block')){
+                        blockArrangedCorrectly = false;
+                    }
+                });
+                if(blockArrangedCorrectly){ 
+                    $('#blank').css('visibility','visible');
+                    $( "#dialog-modal p").html('Congratz....! You solved the puzzle by '+ movesCounter +' moves in '+ hours +':'+ minutes +':'+ seconds +'.');
+                    clearInterval(countUp);
+                    $( "#dialog-modal" ).dialog({
+                      modal: true,
+                      buttons: {
+                        "OK": function() {
+                          location.reload();
+                        }
+                      }
+                    });
+                    
+                }
+            }
+
+            function moveCallback(){      
+                blank_block = clicked_block;
+                $('#moves').html(++movesCounter);
+                if(!timer){ 
+                    countUp = setInterval(setTime, 1000) ;
+                    timer = true;
+                } 
+                checkBlocks();
+            }
+            jQuery.fn.swapWith = function(to) {
+                return this.each(function() {
+                    var copy_to = $(to).clone(true);
+                    var copy_from = $(this).clone(true);
+                    $(to).replaceWith(copy_from);
+                    $(this).replaceWith(copy_to);   
+                });
+            };
+            $(function() {
+                
+                $('ul').each(function(){
+                    // get current ul
+                    var $ul = $(this);
+                    // get array of list items in current ul
+                    var $liArr = $ul.children('li');
+                    // sort array of list items in current ul randomly
+                    $liArr.sort(function(a,b){
+                        // Get a random number between 0 and 10
+                        var temp = parseInt( Math.random()*10 );
+                        // Get 1 or 0, whether temp is odd or even
+                        var isOddOrEven = temp%2;
+                        // Get +1 or -1, whether temp greater or smaller than 5
+                        var isPosOrNeg = temp>5? 1 : -1;
+                        // Return -1, 0, or +1
+                        return ( isOddOrEven*isPosOrNeg );
+                    })
+                    // append list items to ul
+                    .appendTo($ul); 
+
+                    $liArr.each(function(i){
+                        $(this).attr('block',i+1);
+                    });
+                });
+
+                blank_block = $('#blank').attr('block');
+                clicked_block = 0;
+                movesCounter = 0;
+                timer = false;
+
+                $('.ui-state-default').click(function(){
+
+                    clicked_block = $(this).attr('block');
+
+                    if( (clicked_block == blank_block - 1 || clicked_block - 1 == blank_block || clicked_block == blank_block - 4 || clicked_block - 4 == blank_block) && (isSameRow(blank_block, clicked_block) || isSameColumn(blank_block, clicked_block)) ){
+                        $('#blank').attr('block',clicked_block);
+                        $(this).attr('block',blank_block);
+                        $(this).swapWith($('#blank'));  
+                        moveCallback();                 
+                    }
+                    else if( clicked_block == blank_block - 2 && isSameRow(blank_block, clicked_block) ){
+                        $("li[block='"+ (parseInt(blank_block) - 1) +"']").swapWith($('#blank'));
+                        $(this).swapWith($('#blank'));
+                        moveCallback();
+                    }
+                    else if( clicked_block - 2 == blank_block && isSameRow(blank_block, clicked_block) ){
+                        $("li[block='"+ (parseInt(blank_block) + 1) +"']").swapWith($('#blank'));
+                        $(this).swapWith($('#blank'));
+                        moveCallback();
+                    }
+                    else if( clicked_block == blank_block - 8 && isSameColumn(blank_block, clicked_block) ){
+                        $("li[block='"+ (parseInt(blank_block) - 4) +"']").swapWith($('#blank'));
+                        $(this).swapWith($('#blank'));
+                        moveCallback();
+                    }
+                    else if( clicked_block - 8 == blank_block && isSameColumn(blank_block, clicked_block) ){
+                        $("li[block='"+ (parseInt(blank_block) + 4) +"']").swapWith($('#blank'));
+                        $(this).swapWith($('#blank'));
+                        moveCallback();
+                    }
+                    else if( clicked_block == blank_block - 3 && isSameRow(blank_block, clicked_block) ){
+                        $("li[block='"+ (parseInt(blank_block) - 1) +"']").swapWith($('#blank'));
+                        $("li[block='"+ (parseInt(blank_block) - 2) +"']").swapWith($('#blank'));
+                        $(this).swapWith($('#blank'));
+                        moveCallback();
+                    }
+                    else if( clicked_block - 3 == blank_block && isSameRow(blank_block, clicked_block) ){
+                        $("li[block='"+ (parseInt(blank_block) + 1) +"']").swapWith($('#blank'));
+                        $("li[block='"+ (parseInt(blank_block) + 2) +"']").swapWith($('#blank'));
+                        $(this).swapWith($('#blank'));
+                        moveCallback();
+                    }
+                    else if( clicked_block == blank_block - 12 && isSameColumn(blank_block, clicked_block) ){
+                        $("li[block='"+ (parseInt(blank_block) - 4) +"']").swapWith($('#blank'));
+                        $("li[block='"+ (parseInt(blank_block) - 8) +"']").swapWith($('#blank'));
+                        $(this).swapWith($('#blank'));
+                        moveCallback();
+                    }
+                    else if( clicked_block - 12 == blank_block && isSameColumn(blank_block, clicked_block) ){
+                        $("li[block='"+ (parseInt(blank_block) + 4) +"']").swapWith($('#blank'));
+                        $("li[block='"+ (parseInt(blank_block) + 8) +"']").swapWith($('#blank'));
+                        $(this).swapWith($('#blank'));
+                        moveCallback();
+                    }     
+                });
+            });
+        </script>
+    </head>
+    <body oncontextmenu="return false">
+
+        <div id="dialog-modal" title="Congratz..." style="display: none;">
+          <p></p>
+        </div>
+
+        <div id="timeDiv">
+            Time = <span id="hrs">00</span>:<span id="min">00</span>:<span id="sec">00</span>
+        </div>
+
+        <div id="movesDiv">
+            Total Moves = <span id="moves">0</span>
+        </div>
+
+        <ul id="sortable">
+            <li class="ui-state-default">1</li>
+            <li class="ui-state-default">2</li>
+            <li class="ui-state-default">3</li>
+            <li class="ui-state-default">4</li>
+            <li class="ui-state-default">5</li>
+            <li class="ui-state-default">6</li>
+            <li class="ui-state-default">7</li>
+            <li class="ui-state-default">8</li>
+            <li class="ui-state-default">9</li>
+            <li class="ui-state-default">10</li>
+            <li class="ui-state-default">11</li>
+            <li class="ui-state-default">12</li>
+            <li class="ui-state-default">13</li>
+            <li class="ui-state-default">14</li>
+            <li class="ui-state-default">15</li>
+            <li class="ui-state-default" id="blank">16</li>
+        </ul>
+
+    </body>
+</html>
