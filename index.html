@@ -104,194 +104,192 @@
         </style>
         <script>
             totalSeconds = 0;
-            seconds = 0;
-            minutes = 0;
-            hours = 0;
+seconds = 0;
+minutes = 0;
+hours = 0;
 
-            function setTime(){
-                ++totalSeconds;
-                seconds = pad( totalSeconds % 60 );
-                minutes = pad( Math.floor( totalSeconds / 60 ) % 60 );
-                hours = pad( Math.floor( totalSeconds / 3600 ) );
-                $('#sec').html(seconds);
-                $('#min').html(minutes);
-                $('#hrs').html(hours);
-            }
+randomize = function () {
+    $('ul').each(function () {
+        // get current ul
+        var $ul = $(this);
+        // get array of list items in current ul
+        var $liArr = $ul.children('li');
+        // sort array of list items in current ul randomly
+        $liArr.sort(function (a, b) {
+            // Get a random number between 0 and 10
+            var temp = parseInt(Math.random() * 10);
+            // Get 1 or 0, whether temp is odd or even
+            var isOddOrEven = temp % 2;
+            // Get +1 or -1, whether temp greater or smaller than 5
+            var isPosOrNeg = temp > 5 ? 1 : -1;
+            // Return -1, 0, or +1
+            return (isOddOrEven * isPosOrNeg);
+        })
+        // append list items to ul
+        .appendTo($ul);
+        
+        $liArr.each(function (i) {
+            $(this).attr('block', i + 1);
+        });
+    });
+}
 
-            function pad(val){
-                var valString = val + "";
-                if(valString.length < 2){
-                    return "0" + valString;
+function setTime() {
+    ++totalSeconds;
+    seconds = pad(totalSeconds % 60);
+    minutes = pad(Math.floor(totalSeconds / 60) % 60);
+    hours = pad(Math.floor(totalSeconds / 3600));
+    $('#sec').html(seconds);
+    $('#min').html(minutes);
+    $('#hrs').html(hours);
+}
+
+function pad(val) {
+    var valString = val + "";
+    if (valString.length < 2) {
+        return "0" + valString;
+    } else {
+        return valString;
+    }
+}
+
+function getRow(a) {
+    if (1 <= a && a <= 4) return 1;
+    else if (5 <= a && a <= 8) return 2;
+    else if (9 <= a && a <= 12) return 3;
+    else if (13 <= a && a <= 16) return 4;
+}
+
+function getCol(a) {
+    switch (a % 4) {
+        case 0:
+            return 4;
+            break;
+        default:
+            return a % 4;
+            break;
+    }
+}
+
+function isSameRow(b, c) {
+    var bRow, cRow;
+
+    bRow = getRow(b);
+    cRow = getRow(c);
+
+    return (bRow == cRow);
+}
+
+function isSameColumn(b, c) {
+    var bCol, cCol;
+
+    bCol = getCol(b);
+    cCol = getCol(c);
+
+    return (bCol == cCol);
+}
+
+function checkBlocks() {
+    var blockArrangedCorrectly = true;
+    $('ul li').each(function (i) {
+        $(this).attr('block', i + 1);
+        if ($(this).html() != $(this).attr('block')) {
+            blockArrangedCorrectly = false;
+        }
+    });
+    if (blockArrangedCorrectly) {
+        $("#dialog-modal p").html('Congratz....! You solved the puzzle by ' + movesCounter + ' moves in ' + hours + ':' + minutes + ':' + seconds + '.');
+        clearInterval(countUp);
+        $("#dialog-modal").dialog({
+            modal: true,
+            buttons: {
+                "Re-Play": function () {
+                    totalSeconds = -1;
+                    setTime();
+                    movesCounter = 0;
+                    $('#moves').html(0);
+                    timer = false;
+                    randomize();                  
+                    $('.ui-dialog-titlebar-close').trigger('click');
                 }
-                else{
-                    return valString;
-                }
             }
+        });
 
-            function getRow(a){
-                if( 1 <= a && a <= 4) return 1;
-                else if( 5 <= a && a <= 8) return 2;
-                else if( 9 <= a && a <= 12) return 3;
-                else if( 13 <= a && a <= 16) return 4;
-            }
+    }
+}
 
-            function getCol(a){
-                switch(a%4){
-                    case 0:
-                        return 4;
-                        break;
-                    default:
-                        return a%4;
-                        break;
-                }
-            }
+function moveCallback() {
+    blank_block = clicked_block;
+    $('#moves').html(++movesCounter);
+    if (!timer) {
+        countUp = setInterval(setTime, 1000);
+        timer = true;
+    }
+    checkBlocks();
+}
+jQuery.fn.swapWith = function (to) {
+    var copy_to = $(to).clone(true);
+    var copy_from = $(this).clone(true);
+    $(to).replaceWith(copy_from);
+    $(this).replaceWith(copy_to);
+};
+$(function () {
 
-            function isSameRow(b,c){
-                var bRow, cRow;
+    randomize();
 
-                bRow = getRow(b);
-                cRow = getRow(c);
+    blank_block = $('#blank').attr('block');
+    clicked_block = 0;
+    movesCounter = 0;
+    timer = false;
 
-                return (bRow == cRow);
-            }
+    $('.ui-state-default').click(function () {
 
-            function isSameColumn(b,c){
-                var bCol, cCol;
+        clicked_block = $(this).attr('block');
 
-                bCol = getCol(b);
-                cCol = getCol(c);
-
-                return (bCol == cCol);
-            }
-
-            function checkBlocks(){
-                var blockArrangedCorrectly = true;
-                $('ul li').each(function(i){
-                    $(this).attr('block', i+1);
-                    if($(this).html() != $(this).attr('block')){
-                        blockArrangedCorrectly = false;
-                    }
-                });
-                if(blockArrangedCorrectly){ 
-                    $('#blank').css('visibility','visible');
-                    $( "#dialog-modal p").html('Congratz....! You solved the puzzle by '+ movesCounter +' moves in '+ hours +':'+ minutes +':'+ seconds +'.');
-                    clearInterval(countUp);
-                    $( "#dialog-modal" ).dialog({
-                      modal: true,
-                      buttons: {
-                        "OK": function() {
-                          location.reload();
-                        }
-                      }
-                    });
-                    
-                }
-            }
-
-            function moveCallback(){      
-                blank_block = clicked_block;
-                $('#moves').html(++movesCounter);
-                if(!timer){ 
-                    countUp = setInterval(setTime, 1000) ;
-                    timer = true;
-                } 
-                checkBlocks();
-            }
-            jQuery.fn.swapWith = function(to) {
-                return this.each(function() {
-                    var copy_to = $(to).clone(true);
-                    var copy_from = $(this).clone(true);
-                    $(to).replaceWith(copy_from);
-                    $(this).replaceWith(copy_to);   
-                });
-            };
-            $(function() {
-                
-                $('ul').each(function(){
-                    // get current ul
-                    var $ul = $(this);
-                    // get array of list items in current ul
-                    var $liArr = $ul.children('li');
-                    // sort array of list items in current ul randomly
-                    $liArr.sort(function(a,b){
-                        // Get a random number between 0 and 10
-                        var temp = parseInt( Math.random()*10 );
-                        // Get 1 or 0, whether temp is odd or even
-                        var isOddOrEven = temp%2;
-                        // Get +1 or -1, whether temp greater or smaller than 5
-                        var isPosOrNeg = temp>5? 1 : -1;
-                        // Return -1, 0, or +1
-                        return ( isOddOrEven*isPosOrNeg );
-                    })
-                    // append list items to ul
-                    .appendTo($ul); 
-
-                    $liArr.each(function(i){
-                        $(this).attr('block',i+1);
-                    });
-                });
-
-                blank_block = $('#blank').attr('block');
-                clicked_block = 0;
-                movesCounter = 0;
-                timer = false;
-
-                $('.ui-state-default').click(function(){
-
-                    clicked_block = $(this).attr('block');
-
-                    if( (clicked_block == blank_block - 1 || clicked_block - 1 == blank_block || clicked_block == blank_block - 4 || clicked_block - 4 == blank_block) && (isSameRow(blank_block, clicked_block) || isSameColumn(blank_block, clicked_block)) ){
-                        $('#blank').attr('block',clicked_block);
-                        $(this).attr('block',blank_block);
-                        $(this).swapWith($('#blank'));  
-                        moveCallback();                 
-                    }
-                    else if( clicked_block == blank_block - 2 && isSameRow(blank_block, clicked_block) ){
-                        $("li[block='"+ (parseInt(blank_block) - 1) +"']").swapWith($('#blank'));
-                        $(this).swapWith($('#blank'));
-                        moveCallback();
-                    }
-                    else if( clicked_block - 2 == blank_block && isSameRow(blank_block, clicked_block) ){
-                        $("li[block='"+ (parseInt(blank_block) + 1) +"']").swapWith($('#blank'));
-                        $(this).swapWith($('#blank'));
-                        moveCallback();
-                    }
-                    else if( clicked_block == blank_block - 8 && isSameColumn(blank_block, clicked_block) ){
-                        $("li[block='"+ (parseInt(blank_block) - 4) +"']").swapWith($('#blank'));
-                        $(this).swapWith($('#blank'));
-                        moveCallback();
-                    }
-                    else if( clicked_block - 8 == blank_block && isSameColumn(blank_block, clicked_block) ){
-                        $("li[block='"+ (parseInt(blank_block) + 4) +"']").swapWith($('#blank'));
-                        $(this).swapWith($('#blank'));
-                        moveCallback();
-                    }
-                    else if( clicked_block == blank_block - 3 && isSameRow(blank_block, clicked_block) ){
-                        $("li[block='"+ (parseInt(blank_block) - 1) +"']").swapWith($('#blank'));
-                        $("li[block='"+ (parseInt(blank_block) - 2) +"']").swapWith($('#blank'));
-                        $(this).swapWith($('#blank'));
-                        moveCallback();
-                    }
-                    else if( clicked_block - 3 == blank_block && isSameRow(blank_block, clicked_block) ){
-                        $("li[block='"+ (parseInt(blank_block) + 1) +"']").swapWith($('#blank'));
-                        $("li[block='"+ (parseInt(blank_block) + 2) +"']").swapWith($('#blank'));
-                        $(this).swapWith($('#blank'));
-                        moveCallback();
-                    }
-                    else if( clicked_block == blank_block - 12 && isSameColumn(blank_block, clicked_block) ){
-                        $("li[block='"+ (parseInt(blank_block) - 4) +"']").swapWith($('#blank'));
-                        $("li[block='"+ (parseInt(blank_block) - 8) +"']").swapWith($('#blank'));
-                        $(this).swapWith($('#blank'));
-                        moveCallback();
-                    }
-                    else if( clicked_block - 12 == blank_block && isSameColumn(blank_block, clicked_block) ){
-                        $("li[block='"+ (parseInt(blank_block) + 4) +"']").swapWith($('#blank'));
-                        $("li[block='"+ (parseInt(blank_block) + 8) +"']").swapWith($('#blank'));
-                        $(this).swapWith($('#blank'));
-                        moveCallback();
-                    }     
-                });
-            });
+        if ((clicked_block == blank_block - 1 || clicked_block - 1 == blank_block || clicked_block == blank_block - 4 || clicked_block - 4 == blank_block) && (isSameRow(blank_block, clicked_block) || isSameColumn(blank_block, clicked_block))) {
+            $('#blank').attr('block', clicked_block);
+            $(this).attr('block', blank_block);
+            $(this).swapWith($('#blank'));
+            moveCallback();
+        } else if (clicked_block == blank_block - 2 && isSameRow(blank_block, clicked_block)) {
+            $("li[block='" + (parseInt(blank_block) - 1) + "']").swapWith($('#blank'));
+            $(this).swapWith($('#blank'));
+            moveCallback();
+        } else if (clicked_block - 2 == blank_block && isSameRow(blank_block, clicked_block)) {
+            $("li[block='" + (parseInt(blank_block) + 1) + "']").swapWith($('#blank'));
+            $(this).swapWith($('#blank'));
+            moveCallback();
+        } else if (clicked_block == blank_block - 8 && isSameColumn(blank_block, clicked_block)) {
+            $("li[block='" + (parseInt(blank_block) - 4) + "']").swapWith($('#blank'));
+            $(this).swapWith($('#blank'));
+            moveCallback();
+        } else if (clicked_block - 8 == blank_block && isSameColumn(blank_block, clicked_block)) {
+            $("li[block='" + (parseInt(blank_block) + 4) + "']").swapWith($('#blank'));
+            $(this).swapWith($('#blank'));
+            moveCallback();
+        } else if (clicked_block == blank_block - 3 && isSameRow(blank_block, clicked_block)) {
+            $("li[block='" + (parseInt(blank_block) - 1) + "']").swapWith($('#blank'));
+            $("li[block='" + (parseInt(blank_block) - 2) + "']").swapWith($('#blank'));
+            $(this).swapWith($('#blank'));
+            moveCallback();
+        } else if (clicked_block - 3 == blank_block && isSameRow(blank_block, clicked_block)) {
+            $("li[block='" + (parseInt(blank_block) + 1) + "']").swapWith($('#blank'));
+            $("li[block='" + (parseInt(blank_block) + 2) + "']").swapWith($('#blank'));
+            $(this).swapWith($('#blank'));
+            moveCallback();
+        } else if (clicked_block == blank_block - 12 && isSameColumn(blank_block, clicked_block)) {
+            $("li[block='" + (parseInt(blank_block) - 4) + "']").swapWith($('#blank'));
+            $("li[block='" + (parseInt(blank_block) - 8) + "']").swapWith($('#blank'));
+            $(this).swapWith($('#blank'));
+            moveCallback();
+        } else if (clicked_block - 12 == blank_block && isSameColumn(blank_block, clicked_block)) {
+            $("li[block='" + (parseInt(blank_block) + 4) + "']").swapWith($('#blank'));
+            $("li[block='" + (parseInt(blank_block) + 8) + "']").swapWith($('#blank'));
+            $(this).swapWith($('#blank'));
+            moveCallback();
+        }
+    });
+});
         </script>
     </head>
     <body oncontextmenu="return false">
