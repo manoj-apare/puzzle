@@ -246,47 +246,24 @@ $(function () {
 
         clicked_block = $(this).attr('block');
 
-        if ((clicked_block == blank_block - 1 || clicked_block - 1 == blank_block || clicked_block == blank_block - 4 || clicked_block - 4 == blank_block) && (isSameRow(blank_block, clicked_block) || isSameColumn(blank_block, clicked_block))) {
-            $('#blank').attr('block', clicked_block);
-            $(this).attr('block', blank_block);
-            $(this).swapWith($('#blank'));
-            moveCallback();
-        } else if (clicked_block == blank_block - 2 && isSameRow(blank_block, clicked_block)) {
-            $("li[block='" + (parseInt(blank_block) - 1) + "']").swapWith($('#blank'));
-            $(this).swapWith($('#blank'));
-            moveCallback();
-        } else if (clicked_block - 2 == blank_block && isSameRow(blank_block, clicked_block)) {
-            $("li[block='" + (parseInt(blank_block) + 1) + "']").swapWith($('#blank'));
-            $(this).swapWith($('#blank'));
-            moveCallback();
-        } else if (clicked_block == blank_block - 8 && isSameColumn(blank_block, clicked_block)) {
-            $("li[block='" + (parseInt(blank_block) - 4) + "']").swapWith($('#blank'));
-            $(this).swapWith($('#blank'));
-            moveCallback();
-        } else if (clicked_block - 8 == blank_block && isSameColumn(blank_block, clicked_block)) {
-            $("li[block='" + (parseInt(blank_block) + 4) + "']").swapWith($('#blank'));
-            $(this).swapWith($('#blank'));
-            moveCallback();
-        } else if (clicked_block == blank_block - 3 && isSameRow(blank_block, clicked_block)) {
-            $("li[block='" + (parseInt(blank_block) - 1) + "']").swapWith($('#blank'));
-            $("li[block='" + (parseInt(blank_block) - 2) + "']").swapWith($('#blank'));
-            $(this).swapWith($('#blank'));
-            moveCallback();
-        } else if (clicked_block - 3 == blank_block && isSameRow(blank_block, clicked_block)) {
-            $("li[block='" + (parseInt(blank_block) + 1) + "']").swapWith($('#blank'));
-            $("li[block='" + (parseInt(blank_block) + 2) + "']").swapWith($('#blank'));
-            $(this).swapWith($('#blank'));
-            moveCallback();
-        } else if (clicked_block == blank_block - 12 && isSameColumn(blank_block, clicked_block)) {
-            $("li[block='" + (parseInt(blank_block) - 4) + "']").swapWith($('#blank'));
-            $("li[block='" + (parseInt(blank_block) - 8) + "']").swapWith($('#blank'));
-            $(this).swapWith($('#blank'));
-            moveCallback();
-        } else if (clicked_block - 12 == blank_block && isSameColumn(blank_block, clicked_block)) {
-            $("li[block='" + (parseInt(blank_block) + 4) + "']").swapWith($('#blank'));
-            $("li[block='" + (parseInt(blank_block) + 8) + "']").swapWith($('#blank'));
-            $(this).swapWith($('#blank'));
-            moveCallback();
+        if (isSameRow(blank_block, clicked_block) || isSameColumn(blank_block, clicked_block)) {
+            if (Math.abs(clicked_block - blank_block) == 1 || Math.abs(clicked_block - blank_block) == 4) {
+                $('#blank').attr('block', clicked_block);
+                $(this).attr('block', blank_block);
+                $(this).swapWith($('#blank'));
+                moveCallback();
+            } else if (Math.abs(clicked_block - blank_block) == 2 || Math.abs(clicked_block - blank_block) == 8 ) {
+                diff = (clicked_block - blank_block) / 2;
+                $("li[block='" + (parseInt(blank_block) + diff) + "']").swapWith($('#blank'));
+                $(this).swapWith($('#blank'));
+                moveCallback();
+            } else if (Math.abs(clicked_block - blank_block) == 3 || Math.abs(clicked_block - blank_block) == 12) {
+                diff = (clicked_block - blank_block) / 3;
+                $("li[block='" + (parseInt(blank_block) + diff) + "']").swapWith($('#blank'));
+                $("li[block='" + (parseInt(blank_block) + (diff * 2)) + "']").swapWith($('#blank'));
+                $(this).swapWith($('#blank'));
+                moveCallback();
+            } 
         }
     });
 });
